@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import crypto from 'node:crypto'
-import { db } from '../db.js'
+import { db, tx } from '../db.js'
 import { addPoints, notify, activePackage } from '../lib.js'
 
 export default function catalogRoutes({ requireAuth }) {
@@ -31,12 +31,12 @@ export default function catalogRoutes({ requireAuth }) {
     const receipt = 'RCP-' + crypto.randomBytes(3).toString('hex').toUpperCase()
     const expires = new Date(Date.now() + pack.validity_days * 864e5).toISOString()
     const renewal = db.prepare(`SELECT 1 FROM member_packages WHERE member_id = ? AND package_id = ?`).get(req.member.id, pack.id)
-    db.transaction(() => {
+    tx(() => {
       db.prepare(`INSERT INTO member_packages (member_id, package_id, expires_at, credits_total, credits_left, receipt_no)
         VALUES (?, ?, ?, ?, ?, ?)`).run(req.member.id, pack.id, expires, pack.classes, pack.classes, receipt)
       db.prepare(`INSERT INTO purchases (member_id, package_id, amount_cents, method, receipt_no) VALUES (?, ?, ?, 'demo', ?)`)
         .run(req.member.id, pack.id, pack.price_cents, receipt)
-    })()
+    })
     addPoints(req.member.id, renewal ? 'renewal' : 'purchase', receipt)
     notify(req.member.id, 'payment', 'Purchase confirmed', `${pack.name} — receipt ${receipt}. ${pack.classes ? pack.classes + ' classes added.' : 'Unlimited classes activated.'}`, '/packages')
     res.json({ ok: true, receipt })

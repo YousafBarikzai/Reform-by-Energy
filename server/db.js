@@ -1,4 +1,6 @@
-import Database from 'better-sqlite3'
+// Node's built-in SQLite driver: zero native npm dependencies, so deploys
+// can never break on prebuilt-binary/ABI mismatches (requires Node >= 22.5).
+import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
 import path from 'node:path'
 import { hashPassword } from './auth.js'
@@ -8,9 +10,22 @@ export const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data')
 fs.mkdirSync(DATA_DIR, { recursive: true })
 fs.mkdirSync(path.join(DATA_DIR, 'uploads'), { recursive: true })
 
-export const db = new Database(path.join(DATA_DIR, 'reform.db'))
-db.pragma('journal_mode = WAL')
-db.pragma('foreign_keys = ON')
+export const db = new DatabaseSync(path.join(DATA_DIR, 'reform.db'))
+db.exec('PRAGMA journal_mode = WAL')
+db.exec('PRAGMA foreign_keys = ON')
+
+// transaction helper (node:sqlite has no .transaction like better-sqlite3)
+export function tx(fn) {
+  db.exec('BEGIN')
+  try {
+    const result = fn()
+    db.exec('COMMIT')
+    return result
+  } catch (err) {
+    db.exec('ROLLBACK')
+    throw err
+  }
+}
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS members (
