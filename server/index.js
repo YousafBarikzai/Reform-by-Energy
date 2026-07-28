@@ -11,6 +11,10 @@ import catalogRoutes from './routes/catalog.js'
 import memberRoutes from './routes/member.js'
 import adminRoutes from './routes/admin.js'
 
+// surface fatal errors in platform logs instead of dying silently
+process.on('uncaughtException', (err) => { console.error('[reform] fatal:', err); process.exit(1) })
+process.on('unhandledRejection', (err) => { console.error('[reform] unhandled rejection:', err) })
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const DIST = path.join(__dirname, '..', 'dist')
 const app = express()
@@ -28,6 +32,8 @@ app.use('/api/auth', (req, res, next) => {
   hits.set(key, windowHits)
   next()
 })
+
+app.get('/api/health', (_req, res) => res.json({ ok: true, dist: fs.existsSync(path.join(DIST, 'index.html')) }))
 
 const { requireAuth, requireAdmin } = makeAuthMiddleware(db)
 

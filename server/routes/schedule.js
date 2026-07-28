@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { db } from '../db.js'
+import { db, tx } from '../db.js'
 import {
   SESSION_SELECT, sessionView, availability, activePackage, consumeCredit, refundCredit,
   addPoints, notify, promoteWaitlist, evaluateBadges, evaluateChallenges,
@@ -76,7 +76,7 @@ export default function scheduleRoutes({ requireAuth }) {
     const pack = activePackage(req.member.id)
     if (!pack) return res.status(402).json({ error: 'No class credits available — purchase a package to book', needsPackage: true })
 
-    const doBook = db.transaction(() => {
+    const doBook = () => tx(() => {
       consumeCredit(req.member.id)
       const info = db.prepare(`INSERT INTO bookings (session_id, member_id, reformer_id, status) VALUES (?, ?, ?, 'booked')`)
         .run(row.id, req.member.id, reformerId)
@@ -107,13 +107,13 @@ export default function scheduleRoutes({ requireAuth }) {
 
     const avail = availability(row)
     const refundable = !avail.pastCutoff
-    db.transaction(() => {
+    tx(() => {
       db.prepare(`UPDATE bookings SET status = 'cancelled', cancelled_at = datetime('now') WHERE id = ?`).run(booking.id)
       if (refundable) {
         const pack = activePackage(req.member.id) || db.prepare(`SELECT * FROM member_packages WHERE member_id = ? ORDER BY expires_at DESC LIMIT 1`).get(req.member.id)
         if (pack) refundCredit(req.member.id, pack.id)
       }
-    })()
+    })
     notify(req.member.id, 'booking', 'Booking cancelled', refundable
       ? `${row.class_name} cancelled — your class credit has been returned.`
       : `${row.class_name} cancelled after the cut-off — the credit was not returned (see booking policy).`,

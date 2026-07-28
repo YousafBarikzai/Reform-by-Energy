@@ -3,7 +3,7 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import QRCode from 'qrcode'
-import { db, DATA_DIR } from '../db.js'
+import { db, tx, DATA_DIR } from '../db.js'
 import { safeParse } from '../auth.js'
 import { publicMember } from './auth.js'
 import {
@@ -296,10 +296,10 @@ export default function memberRoutes({ requireAuth }) {
     if (balance < reward.cost_points) return res.status(400).json({ error: `You need ${reward.cost_points - balance} more points for this reward` })
     const code = reward.name.split(' ')[0].toUpperCase().slice(0, 5) + '-' + crypto.randomBytes(2).toString('hex').toUpperCase()
     const expires = reward.expiry_days ? new Date(Date.now() + reward.expiry_days * 864e5).toISOString() : null
-    db.transaction(() => {
+    tx(() => {
       db.prepare('INSERT INTO points_ledger (member_id, delta, reason, ref) VALUES (?, ?, ?, ?)').run(req.member.id, -reward.cost_points, 'redeem', reward.name)
       db.prepare('INSERT INTO reward_redemptions (member_id, reward_id, code, expires_at) VALUES (?, ?, ?, ?)').run(req.member.id, reward.id, code, expires)
-    })()
+    })
     notify(req.member.id, 'rewards', 'Reward redeemed', `${reward.name} — show code ${code} at the studio.`, '/profile/rewards')
     res.json({ ok: true, code, expires })
   })
@@ -461,7 +461,7 @@ export default function memberRoutes({ requireAuth }) {
   })
   router.post('/me/delete', requireAuth, (req, res) => {
     if (req.member.role === 'admin') return res.status(400).json({ error: 'Admin accounts cannot self-delete' })
-    db.transaction(() => {
+    tx(() => {
       db.prepare(`UPDATE members SET deleted_at = datetime('now'), email = 'deleted-' || id || '@removed', first_name = 'Deleted', last_name = 'Member', photo = NULL, prefs = '{}' WHERE id = ?`).run(req.member.id)
       db.prepare('DELETE FROM auth_tokens WHERE member_id = ?').run(req.member.id)
       db.prepare('DELETE FROM push_subs WHERE member_id = ?').run(req.member.id)
@@ -469,7 +469,7 @@ export default function memberRoutes({ requireAuth }) {
         try { fs.unlinkSync(path.join(DATA_DIR, 'uploads', p.file)) } catch { /* gone */ }
       }
       db.prepare('DELETE FROM progress_photos WHERE member_id = ?').run(req.member.id)
-    })()
+    })
     res.setHeader('Set-Cookie', 'reform_session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly')
     res.json({ ok: true })
   })
