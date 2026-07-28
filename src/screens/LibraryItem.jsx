@@ -1,5 +1,6 @@
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { api, useApi } from '../api.js'
+import { useAuth } from '../auth.jsx'
 import { ICONS } from '../data.js'
 import Icon from '../components/Icon.jsx'
 import { Btn, Card, ErrorState, PageSkeleton, Tag, TopBar, useToast } from '../ui.jsx'
@@ -17,6 +18,8 @@ const SECTIONS = [
 
 export default function LibraryItem() {
   const { id } = useParams()
+  const nav = useNavigate()
+  const { member } = useAuth()
   const { data, loading, error, refetch } = useApi(`/library/${id}`)
   const toast = useToast()
   if (loading) return <PageSkeleton />
@@ -34,7 +37,7 @@ export default function LibraryItem() {
 
   return (
     <div style={{ animation: 'plFade .3s' }}>
-      <TopBar title="" right={
+      <TopBar title="" right={member &&
         <div className="press" onClick={() => flag({ fav: !my.fav }, my.fav ? 'Removed from favourites' : 'Saved to favourites ♥')}
           style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--card)', boxShadow: 'var(--shadow)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: my.fav ? 'var(--rose)' : 'var(--sub)' }}>
           <Icon d={ICONS.heart} size={19} strokeWidth={my.fav ? 2.4 : 1.7} />
@@ -81,7 +84,19 @@ export default function LibraryItem() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 10, margin: '18px 0 8px' }}>
+        {i.locked && (
+          <Card style={{ marginTop: 16, padding: '22px 20px', textAlign: 'center', background: 'linear-gradient(135deg, var(--pinksoft), var(--card))' }}>
+            <div style={{ fontFamily: 'Marcellus,serif', fontSize: 19 }}>Unlock the full guide</div>
+            <div style={{ fontSize: 12.5, color: 'var(--sub)', lineHeight: 1.6, marginTop: 6 }}>
+              The complete movement breakdown, breathing, modifications, and instructor tips are free with a Reform account.
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+              <Btn style={{ flex: 1 }} onClick={() => nav('/auth', { state: { from: `/library/${id}`, register: true } })}>CREATE ACCOUNT</Btn>
+              <Btn kind="outline" style={{ flex: 1 }} onClick={() => nav('/auth', { state: { from: `/library/${id}` } })}>LOG IN</Btn>
+            </div>
+          </Card>
+        )}
+        {member && <div style={{ display: 'flex', gap: 10, margin: '18px 0 8px' }}>
           <Btn kind={my.completed ? 'soft' : 'primary'} style={{ flex: 1 }}
             onClick={() => flag({ completed: !my.completed }, my.completed ? 'Marked as not done' : 'Marked complete ✓')}>
             {my.completed ? 'COMPLETED ✓' : 'MARK COMPLETE'}
@@ -90,7 +105,7 @@ export default function LibraryItem() {
             onClick={() => flag({ inRoutine: !my.in_routine }, my.in_routine ? 'Removed from your routine' : 'Added to your routine')}>
             {my.in_routine ? 'IN ROUTINE ✓' : 'ADD TO ROUTINE'}
           </Btn>
-        </div>
+        </div>}
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, justifyContent: 'center', padding: '6px 0 26px', fontSize: 11.5, color: 'var(--sub)' }}>
           <Icon d={ICONS.download} size={13} /> Viewed guides stay available offline in the installed app
         </div>

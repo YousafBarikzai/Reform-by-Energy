@@ -231,7 +231,7 @@ export default function Settings() {
       </Card>
 
       <div style={{ padding: '4px 24px 14px' }}>
-        <Btn kind="ghost" onClick={() => { nav('/auth', { state: null }); setTimeout(logout, 50) }}>SIGN OUT</Btn>
+        <Btn kind="ghost" onClick={async () => { await logout(); nav('/') }}>SIGN OUT</Btn>
       </div>
 
       {/* delete account sheet */}

@@ -36,7 +36,7 @@ export default function Notifications() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '18px 24px 10px' }}>
         {items.map((n) => (
           <Card key={n.id} style={{ padding: '13px 16px', display: 'flex', gap: 13, alignItems: 'flex-start', opacity: n.read_at ? 0.75 : 1 }}
-            onClick={n.link && !n.link.startsWith('/reminder') ? () => nav(n.link) : undefined}>
+            onClick={n.link ? () => nav(n.link) : undefined}>
             <div style={{ width: 36, height: 36, borderRadius: 12, background: n.read_at ? 'var(--blush)' : 'var(--pinksoft)', color: 'var(--rose)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Icon d={KIND_ICON[n.kind] || ICONS.bell} size={16} />
             </div>

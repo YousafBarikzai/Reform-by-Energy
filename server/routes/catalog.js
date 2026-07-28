@@ -3,12 +3,13 @@ import crypto from 'node:crypto'
 import { db, tx } from '../db.js'
 import { addPoints, notify, activePackage } from '../lib.js'
 
-export default function catalogRoutes({ requireAuth }) {
+export default function catalogRoutes({ requireAuth, attachMember }) {
   const router = Router()
 
   // ── packages ──
-  router.get('/packages', requireAuth, (req, res) => {
+  router.get('/packages', attachMember, (req, res) => {
     const packages = db.prepare('SELECT * FROM packages WHERE active = 1 ORDER BY sort').all()
+    if (!req.member) return res.json({ packages, current: null, history: [], receipts: [] })
     const current = activePackage(req.member.id)
     const history = db.prepare(`
       SELECT mp.*, p.name AS package_name, p.kind FROM member_packages mp
@@ -43,7 +44,7 @@ export default function catalogRoutes({ requireAuth }) {
   })
 
   // ── library ──
-  router.get('/library', requireAuth, (req, res) => {
+  router.get('/library', attachMember, (req, res) => {
     const { q, category, level, kind } = req.query
     let sql = `SELECT li.*, i.name AS instructor_name FROM library_items li
                LEFT JOIN instructors i ON i.id = li.instructor_id WHERE li.published = 1`
@@ -54,29 +55,35 @@ export default function catalogRoutes({ requireAuth }) {
     if (kind) { sql += ' AND li.kind = ?'; args.push(kind) }
     sql += ' ORDER BY li.created_at DESC'
     const items = db.prepare(sql).all(...args)
-    const mine = db.prepare('SELECT * FROM library_member WHERE member_id = ?').all(req.member.id)
+    const mine = req.member ? db.prepare('SELECT * FROM library_member WHERE member_id = ?').all(req.member.id) : []
     const mineMap = Object.fromEntries(mine.map((m) => [m.item_id, m]))
     res.json({
       items: items.map((i) => ({ ...i, content: undefined, my: mineMap[i.id] || null })),
       categories: db.prepare('SELECT DISTINCT category FROM library_items WHERE published = 1').all().map((r) => r.category),
       levels: db.prepare('SELECT DISTINCT level FROM library_items WHERE published = 1').all().map((r) => r.level),
       kinds: db.prepare('SELECT DISTINCT kind FROM library_items WHERE published = 1').all().map((r) => r.kind),
-      recentlyViewed: db.prepare(`
+      recentlyViewed: req.member ? db.prepare(`
         SELECT li.id, li.title, li.image, li.duration_min, lm.viewed_at FROM library_member lm
         JOIN library_items li ON li.id = lm.item_id
-        WHERE lm.member_id = ? AND lm.viewed_at IS NOT NULL ORDER BY lm.viewed_at DESC LIMIT 6`).all(req.member.id),
+        WHERE lm.member_id = ? AND lm.viewed_at IS NOT NULL ORDER BY lm.viewed_at DESC LIMIT 6`).all(req.member.id) : [],
     })
   })
 
-  router.get('/library/:id', requireAuth, (req, res) => {
+  router.get('/library/:id', attachMember, (req, res) => {
     const item = db.prepare(`SELECT li.*, i.name AS instructor_name, i.photo AS instructor_photo
       FROM library_items li LEFT JOIN instructors i ON i.id = li.instructor_id
       WHERE li.id = ? AND li.published = 1`).get(req.params.id)
     if (!item) return res.status(404).json({ error: 'Content not found' })
+    const content = JSON.parse(item.content || '{}')
+    if (!req.member) {
+      // guests preview the first step; full guidance unlocks with an account
+      const preview = content.start ? { start: content.start } : {}
+      return res.json({ item: { ...item, content: preview, locked: true, my: null } })
+    }
     db.prepare(`INSERT INTO library_member (member_id, item_id, viewed_at) VALUES (?, ?, datetime('now'))
       ON CONFLICT(member_id, item_id) DO UPDATE SET viewed_at = datetime('now')`).run(req.member.id, item.id)
     const my = db.prepare('SELECT * FROM library_member WHERE member_id = ? AND item_id = ?').get(req.member.id, item.id)
-    res.json({ item: { ...item, content: JSON.parse(item.content || '{}'), my } })
+    res.json({ item: { ...item, content, my } })
   })
 
   router.post('/library/:id/flags', requireAuth, (req, res) => {
@@ -92,10 +99,10 @@ export default function catalogRoutes({ requireAuth }) {
   })
 
   // ── playlists ──
-  router.get('/playlists', requireAuth, (req, res) => {
+  router.get('/playlists', attachMember, (req, res) => {
     const playlists = db.prepare(`SELECT p.*, i.name AS instructor_name FROM playlists p
       LEFT JOIN instructors i ON i.id = p.instructor_id`).all()
-    const recent = db.prepare(`
+    const recent = !req.member ? [] : db.prepare(`
       SELECT DISTINCT p.*, i.name AS instructor_name, s.starts_at FROM bookings b
       JOIN class_sessions s ON s.id = b.session_id
       JOIN playlists p ON p.id = s.playlist_id
@@ -105,7 +112,7 @@ export default function catalogRoutes({ requireAuth }) {
   })
 
   // ── announcements ──
-  router.get('/announcements', requireAuth, (_req, res) => {
+  router.get('/announcements', attachMember, (_req, res) => {
     res.json({ announcements: db.prepare('SELECT * FROM announcements WHERE active = 1 ORDER BY pinned DESC, created_at DESC LIMIT 10').all() })
   })
 

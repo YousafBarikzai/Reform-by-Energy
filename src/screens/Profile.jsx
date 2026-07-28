@@ -87,7 +87,7 @@ export default function Profile() {
         <Row icon={ICONS.help} name="Help centre" onClick={() => toast('Ask at the front desk or email hello@reformbyenergym.com')} />
         <Row icon={ICONS.mail} name="Contact us" onClick={() => { window.location.href = 'mailto:hello@reformbyenergym.com' }} />
         {member.role === 'admin' && <Row icon={ICONS.shield} name="Studio admin (CMS)" onClick={() => nav('/admin')} />}
-        <Row icon={ICONS.logout} name="Sign out" danger onClick={() => { nav('/auth', { state: null }); setTimeout(logout, 50) }} isLast />
+        <Row icon={ICONS.logout} name="Sign out" danger onClick={async () => { await logout(); nav('/') }} isLast />
       </Card>
 
       <div style={{ display: 'flex', justifyContent: 'center', padding: '26px 0 6px', opacity: 0.45 }}>

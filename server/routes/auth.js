@@ -47,12 +47,12 @@ router.post('/register', (req, res) => {
 })
 
 router.post('/login', (req, res) => {
-  const { email, password } = req.body || {}
+  const { email, password, remember } = req.body || {}
   const member = db.prepare('SELECT * FROM members WHERE email = ? AND deleted_at IS NULL').get(String(email || '').toLowerCase().trim())
   if (!member || !verifyPassword(password || '', member.pass_hash)) {
     return res.status(401).json({ error: 'Incorrect email or password' })
   }
-  const { token, expires } = issueSession(db, member.id)
+  const { token, expires } = issueSession(db, member.id, remember === false ? 1 : 30)
   res.setHeader('Set-Cookie', sessionCookie(token, expires))
   res.json({ member: publicMember(member) })
 })
