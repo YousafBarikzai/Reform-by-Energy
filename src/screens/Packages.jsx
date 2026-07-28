@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api, useApi } from '../api.js'
+import { useAuth } from '../auth.jsx'
 import { ICONS } from '../data.js'
 import Icon from '../components/Icon.jsx'
 import { Btn, Card, ErrorState, PageSkeleton, SectionLabel, Sheet, Tag, fmtDate, useToast } from '../ui.jsx'
@@ -7,6 +9,8 @@ import { Btn, Card, ErrorState, PageSkeleton, SectionLabel, Sheet, Tag, fmtDate,
 const price = (cents) => `£${(cents / 100).toFixed(cents % 100 ? 2 : 0)}`
 
 export default function Packages() {
+  const nav = useNavigate()
+  const { member } = useAuth()
   const { data, loading, error, refetch } = useApi('/packages')
   const [tab, setTab] = useState('packages')
   const [buying, setBuying] = useState(null)
@@ -18,6 +22,11 @@ export default function Packages() {
   const d = data
   const packs = d.packages.filter((p) => p.kind === 'pack')
   const memberships = d.packages.filter((p) => p.kind === 'membership')
+
+  function select(pkg) {
+    if (!member) return nav('/auth', { state: { from: '/packages', register: true } })
+    setBuying(pkg)
+  }
 
   async function purchase() {
     setBusy(true)
@@ -86,7 +95,7 @@ export default function Packages() {
                     <CheckRow text={p.classes ? `${p.classes} reformer class${p.classes > 1 ? 'es' : ''}` : 'Unlimited classes'} />
                     <CheckRow text={p.description} />
                   </div>
-                  <Btn kind={p.popular ? 'primary' : 'soft'} style={{ marginTop: 14 }} onClick={() => setBuying(p)}>SELECT</Btn>
+                  <Btn kind={p.popular ? 'primary' : 'soft'} style={{ marginTop: 14 }} onClick={() => select(p)}>SELECT</Btn>
                 </div>
               </Card>
             ))}
@@ -110,7 +119,7 @@ export default function Packages() {
                   <CheckRow text="Priority booking · guest pass monthly" />
                   <CheckRow text={p.terms} />
                 </div>
-                <Btn style={{ marginTop: 14 }} onClick={() => setBuying(p)}>{d.current?.package_name === p.name ? 'RENEW' : 'SELECT'}</Btn>
+                <Btn style={{ marginTop: 14 }} onClick={() => select(p)}>{d.current?.package_name === p.name ? 'RENEW' : 'SELECT'}</Btn>
               </Card>
             ))}
           </div>

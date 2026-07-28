@@ -4,7 +4,7 @@ import { DatabaseSync } from 'node:sqlite'
 import fs from 'node:fs'
 import path from 'node:path'
 import { hashPassword } from './auth.js'
-import { seed } from './seed.js'
+import { seed, seedPublicContent } from './seed.js'
 
 export const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), 'data')
 fs.mkdirSync(DATA_DIR, { recursive: true })
@@ -330,6 +330,21 @@ CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS testimonials (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  text TEXT NOT NULL,
+  rating INTEGER NOT NULL DEFAULT 5,
+  active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS faqs (
+  id INTEGER PRIMARY KEY,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  sort INTEGER NOT NULL DEFAULT 0,
+  active INTEGER NOT NULL DEFAULT 1
+);
 CREATE TABLE IF NOT EXISTS audit_log (
   id INTEGER PRIMARY KEY,
   admin_id INTEGER NOT NULL REFERENCES members(id),
@@ -343,11 +358,15 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 db.exec(SCHEMA)
 
+// lightweight migrations for databases created before these columns existed
+try { db.exec(`ALTER TABLE instructors ADD COLUMN quals TEXT DEFAULT ''`) } catch { /* exists */ }
+
 const isEmpty = !db.prepare('SELECT id FROM members LIMIT 1').get()
 if (isEmpty) {
   seed(db, hashPassword)
   console.log('[db] seeded fresh database at', DATA_DIR)
 }
+seedPublicContent(db) // idempotent: fills testimonials/faqs/quals on older databases too
 
 export function getSetting(key) {
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key)

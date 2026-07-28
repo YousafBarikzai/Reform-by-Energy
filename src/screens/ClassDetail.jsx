@@ -48,6 +48,7 @@ export default function ClassDetail() {
   const { id } = useParams()
   const nav = useNavigate()
   const { member, refresh } = useAuth()
+  const goAuth = (register = false) => nav('/auth', { state: { from: `/class/${id}`, register } })
   const toast = useToast()
   const { data, loading, error, refetch } = useApi(`/sessions/${id}`)
   const [selectedReformer, setSelectedReformer] = useState(null)
@@ -174,6 +175,13 @@ export default function ClassDetail() {
         <div style={{ margin: '18px 0 26px' }}>
           {s.started ? (
             <Btn kind="soft" disabled>THIS CLASS HAS FINISHED</Btn>
+          ) : !member ? (
+            <>
+              <Btn onClick={() => goAuth(false)}>{s.status === 'full' ? 'SIGN IN TO JOIN THE WAITING LIST' : 'SIGN IN TO BOOK'}</Btn>
+              <div onClick={() => goAuth(true)} style={{ textAlign: 'center', fontSize: 12.5, fontWeight: 600, color: 'var(--rose)', marginTop: 12, cursor: 'pointer' }}>
+                New to Reform? Create an account — you'll return right here
+              </div>
+            </>
           ) : booked ? (
             <Btn kind="outline" disabled={busy} onClick={cancel}>CANCEL BOOKING{!s.pastCutoff ? '' : ' · NO REFUND AFTER CUT-OFF'}</Btn>
           ) : s.pastCutoff ? (

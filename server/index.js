@@ -10,6 +10,7 @@ import scheduleRoutes from './routes/schedule.js'
 import catalogRoutes from './routes/catalog.js'
 import memberRoutes from './routes/member.js'
 import adminRoutes from './routes/admin.js'
+import publicRoutes from './routes/public.js'
 
 // surface fatal errors in platform logs instead of dying silently
 process.on('uncaughtException', (err) => { console.error('[reform] fatal:', err); process.exit(1) })
@@ -35,11 +36,12 @@ app.use('/api/auth', (req, res, next) => {
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, dist: fs.existsSync(path.join(DIST, 'index.html')) }))
 
-const { requireAuth, requireAdmin } = makeAuthMiddleware(db)
+const { requireAuth, requireAdmin, attachMember } = makeAuthMiddleware(db)
 
 app.use('/api/auth', authRoutes)
-app.use('/api', scheduleRoutes({ requireAuth }))
-app.use('/api', catalogRoutes({ requireAuth }))
+app.use('/api', publicRoutes({ attachMember }))
+app.use('/api', scheduleRoutes({ requireAuth, attachMember }))
+app.use('/api', catalogRoutes({ requireAuth, attachMember }))
 app.use('/api', memberRoutes({ requireAuth }))
 app.use('/api/admin', adminRoutes({ requireAdmin }))
 

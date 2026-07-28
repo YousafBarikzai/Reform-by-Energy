@@ -5,11 +5,11 @@ import {
   addPoints, notify, promoteWaitlist, evaluateBadges, evaluateChallenges,
 } from '../lib.js'
 
-export default function scheduleRoutes({ requireAuth }) {
+export default function scheduleRoutes({ requireAuth, attachMember }) {
   const router = Router()
 
   // GET /api/schedule?date=YYYY-MM-DD&instructor=&level=&category=&availability=&q=
-  router.get('/schedule', requireAuth, (req, res) => {
+  router.get('/schedule', attachMember, (req, res) => {
     const { date, instructor, level, category, q } = req.query
     let sql = `${SESSION_SELECT} WHERE s.status = 'scheduled'`
     const args = []
@@ -20,12 +20,12 @@ export default function scheduleRoutes({ requireAuth }) {
     if (category) { sql += ' AND ct.category = ?'; args.push(category) }
     if (q) { sql += ' AND (ct.name LIKE ? OR i.name LIKE ?)'; args.push(`%${q}%`, `%${q}%`) }
     sql += ' ORDER BY s.starts_at LIMIT 200'
-    let sessions = db.prepare(sql).all(...args).map((r) => sessionView(r, req.member.id))
+    let sessions = db.prepare(sql).all(...args).map((r) => sessionView(r, req.member?.id))
     if (req.query.availability === 'available') sessions = sessions.filter((s) => s.status !== 'full')
     res.json({ sessions })
   })
 
-  router.get('/schedule/filters', requireAuth, (_req, res) => {
+  router.get('/schedule/filters', attachMember, (_req, res) => {
     res.json({
       instructors: db.prepare('SELECT id, name, photo FROM instructors WHERE active = 1').all(),
       levels: db.prepare('SELECT DISTINCT level FROM class_types WHERE active = 1').all().map((r) => r.level),
@@ -33,10 +33,10 @@ export default function scheduleRoutes({ requireAuth }) {
     })
   })
 
-  router.get('/sessions/:id', requireAuth, (req, res) => {
+  router.get('/sessions/:id', attachMember, (req, res) => {
     const row = db.prepare(`${SESSION_SELECT} WHERE s.id = ?`).get(req.params.id)
     if (!row) return res.status(404).json({ error: 'Class not found' })
-    const view = sessionView(row, req.member.id)
+    const view = sessionView(row, req.member?.id)
     // reformer map: layout + live occupancy
     const reformers = db.prepare('SELECT * FROM reformers WHERE studio_id = ? ORDER BY number').all(row.studio_id)
     const taken = db.prepare(`SELECT reformer_id, member_id FROM bookings WHERE session_id = ? AND status = 'booked' AND reformer_id IS NOT NULL`).all(row.id)
@@ -47,10 +47,10 @@ export default function scheduleRoutes({ requireAuth }) {
       cols: studio.cols, entrance: studio.entrance,
       reformers: reformers.map((r) => ({
         id: r.id, number: r.number,
-        state: r.status !== 'ok' ? 'maintenance' : takenMap[r.id] ? (takenMap[r.id] === req.member.id ? 'mine' : 'taken') : 'free',
+        state: r.status !== 'ok' ? 'maintenance' : takenMap[r.id] ? (req.member && takenMap[r.id] === req.member.id ? 'mine' : 'taken') : 'free',
       })),
     }
-    view.favouriteReformer = req.prefs.favouriteReformer || null
+    view.favouriteReformer = req.member ? (req.prefs.favouriteReformer || null) : null
     res.json({ session: view })
   })
 

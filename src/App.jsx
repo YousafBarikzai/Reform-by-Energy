@@ -4,15 +4,22 @@ import { IOSDevice } from './ios-frame.jsx'
 import { useAuth } from './auth.jsx'
 import { useIsPhone, PageSkeleton } from './ui.jsx'
 import BottomNav from './components/BottomNav.jsx'
+import Header from './components/Header.jsx'
 import Splash from './components/Splash.jsx'
 
 import AuthScreen from './screens/Auth.jsx'
+import PublicHome from './screens/PublicHome.jsx'
 import Home from './screens/Home.jsx'
 import Schedule from './screens/Schedule.jsx'
 import ClassDetail from './screens/ClassDetail.jsx'
 import Packages from './screens/Packages.jsx'
 import Library from './screens/Library.jsx'
 import LibraryItem from './screens/LibraryItem.jsx'
+import Instructors from './screens/Instructors.jsx'
+import InstructorProfile from './screens/InstructorProfile.jsx'
+import About from './screens/About.jsx'
+import Contact from './screens/Contact.jsx'
+import Join from './screens/Join.jsx'
 import Profile from './screens/Profile.jsx'
 import Progress from './screens/Progress.jsx'
 import Mirror from './screens/Mirror.jsx'
@@ -26,23 +33,44 @@ import Settings from './screens/Settings.jsx'
 import Notifications from './screens/Notifications.jsx'
 import Admin from './screens/Admin.jsx'
 
-function Protected() {
+// Shell for every page: guests get the glass header + public menu, everyone
+// gets the bottom navigation. Scroll resets on route change.
+function Shell() {
   const { member, loading } = useAuth()
   const location = useLocation()
   const scroller = useRef(null)
   const isPhone = useIsPhone()
   useEffect(() => { scroller.current?.scrollTo({ top: 0 }) }, [location.pathname])
   if (loading) return <PageSkeleton />
-  if (!member) return <Navigate to="/auth" replace state={{ from: location.pathname }} />
   const isAdminArea = location.pathname.startsWith('/admin')
+  const guest = !member
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
-      <div ref={scroller} style={{ flex: 1, overflowY: 'auto', paddingBottom: isAdminArea ? 24 : 124, paddingTop: isPhone ? 'env(safe-area-inset-top)' : 46 }}>
+      {guest && <Header />}
+      <div ref={scroller} style={{ flex: 1, overflowY: 'auto', paddingBottom: isAdminArea ? 24 : 124, paddingTop: guest ? (isPhone ? 'calc(env(safe-area-inset-top) + 52px)' : 94) : (isPhone ? 'env(safe-area-inset-top)' : 46) }}>
         <Outlet />
       </div>
       {!isAdminArea && <BottomNav />}
     </div>
   )
+}
+
+// Guard for member-only areas: bounce to /auth remembering where they were.
+function Protected() {
+  const { member, loading } = useAuth()
+  const location = useLocation()
+  if (loading) return <PageSkeleton />
+  if (!member) return <Navigate to="/auth" replace state={{ from: location.pathname }} />
+  return <Outlet />
+}
+
+function HomeSwitch() {
+  const { member } = useAuth()
+  return member ? <Home /> : <PublicHome />
+}
+function ProfileSwitch() {
+  const { member } = useAuth()
+  return member ? <Profile /> : <Join />
 }
 
 export default function App() {
@@ -60,25 +88,33 @@ export default function App() {
     <div className="pl" style={{ position: 'relative', width: '100%', height: '100%', background: 'var(--bg)', color: 'var(--ink)', fontFamily: "'Albert Sans',sans-serif", overflow: 'hidden' }}>
       <Routes>
         <Route path="/auth" element={<AuthScreen />} />
-        <Route element={<Protected />}>
-          <Route path="/" element={<Home />} />
+        <Route element={<Shell />}>
+          {/* public website — no login required */}
+          <Route path="/" element={<HomeSwitch />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/class/:id" element={<ClassDetail />} />
           <Route path="/packages" element={<Packages />} />
           <Route path="/library" element={<Library />} />
           <Route path="/library/:id" element={<LibraryItem />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/progress" element={<Progress />} />
-          <Route path="/profile/mirror" element={<Mirror />} />
-          <Route path="/profile/journey" element={<Journey />} />
-          <Route path="/profile/history" element={<History />} />
-          <Route path="/profile/rewards" element={<Rewards />} />
-          <Route path="/profile/challenges" element={<Challenges />} />
-          <Route path="/profile/wellness" element={<Wellness />} />
-          <Route path="/profile/card" element={<MemberCard />} />
-          <Route path="/profile/settings" element={<Settings />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/admin/*" element={<Admin />} />
+          <Route path="/instructors" element={<Instructors />} />
+          <Route path="/instructors/:id" element={<InstructorProfile />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/profile" element={<ProfileSwitch />} />
+          {/* member-only */}
+          <Route element={<Protected />}>
+            <Route path="/profile/progress" element={<Progress />} />
+            <Route path="/profile/mirror" element={<Mirror />} />
+            <Route path="/profile/journey" element={<Journey />} />
+            <Route path="/profile/history" element={<History />} />
+            <Route path="/profile/rewards" element={<Rewards />} />
+            <Route path="/profile/challenges" element={<Challenges />} />
+            <Route path="/profile/wellness" element={<Wellness />} />
+            <Route path="/profile/card" element={<MemberCard />} />
+            <Route path="/profile/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/admin/*" element={<Admin />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

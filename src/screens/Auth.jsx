@@ -7,8 +7,9 @@ import { FullLogo } from '../components/Logo.jsx'
 
 export default function AuthScreen() {
   const { member, setMember } = useAuth()
-  const [mode, setMode] = useState('login') // login | register | forgot | reset
-  const [form, setForm] = useState({})
+  const location0 = useLocation()
+  const [mode, setMode] = useState(location0.state?.register ? 'register' : 'login') // login | register | forgot | reset
+  const [form, setForm] = useState({ remember: true })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [resetCode, setResetCode] = useState(null)
@@ -24,7 +25,7 @@ export default function AuthScreen() {
     setBusy(true); setError(null)
     try {
       if (mode === 'login') {
-        const d = await api.post('/auth/login', { email: form.email, password: form.password })
+        const d = await api.post('/auth/login', { email: form.email, password: form.password, remember: form.remember !== false })
         setMember(d.member)
       } else if (mode === 'register') {
         const d = await api.post('/auth/register', { email: form.email, password: form.password, firstName: form.firstName, lastName: form.lastName, referralCode: form.referralCode })
@@ -84,6 +85,18 @@ export default function AuthScreen() {
           {mode === 'register' && (
             <Field label="Referral code (optional)"><input style={inputStyle} value={form.referralCode || ''} onChange={set('referralCode')} placeholder="From a friend" /></Field>
           )}
+          {mode === 'login' && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: -2 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--sub)', cursor: 'pointer' }}>
+                <span onClick={() => setForm((f) => ({ ...f, remember: f.remember === false }))}
+                  style={{ width: 18, height: 18, borderRadius: 6, border: '1.5px solid var(--pink)', background: form.remember !== false ? 'var(--rose)' : 'var(--card)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 11, fontWeight: 800, transition: 'all .2s' }}>
+                  {form.remember !== false ? '✓' : ''}
+                </span>
+                Remember me
+              </label>
+              <span onClick={() => { setMode('forgot'); setError(null) }} style={{ fontSize: 13, fontWeight: 600, color: 'var(--sub)', cursor: 'pointer' }}>Forgotten password</span>
+            </div>
+          )}
 
           {error && <div style={{ background: '#FBE2E2', color: '#B03A3A', borderRadius: 12, padding: '11px 15px', fontSize: 13, fontWeight: 500 }}>{error}</div>}
 
@@ -95,12 +108,12 @@ export default function AuthScreen() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 20 }}>
           {mode === 'login' && (
-            <>
-              <div style={link} onClick={() => { setMode('register'); setError(null) }}>New to Reform? Create an account</div>
-              <div style={{ ...link, color: 'var(--sub)' }} onClick={() => { setMode('forgot'); setError(null) }}>Forgotten password</div>
-            </>
+            <div style={link} onClick={() => { setMode('register'); setError(null) }}>New to Reform? Create an account</div>
           )}
           {mode !== 'login' && <div style={link} onClick={() => { setMode('login'); setError(null) }}>Back to sign in</div>}
+          <div onClick={() => nav('/')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, marginTop: 6, padding: '13px 0', borderRadius: 100, background: 'var(--card)', boxShadow: 'var(--shadow)', fontSize: 13, fontWeight: 600, color: 'var(--ink)', cursor: 'pointer' }} className="press">
+            Explore the website without an account →
+          </div>
         </div>
 
         <div style={{ marginTop: 26, textAlign: 'center', fontSize: 11.5, color: 'var(--sub)', lineHeight: 1.7 }}>

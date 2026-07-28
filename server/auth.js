@@ -19,9 +19,9 @@ export const newToken = () => crypto.randomBytes(32).toString('hex')
 
 const SESSION_DAYS = 30
 
-export function issueSession(db, memberId) {
+export function issueSession(db, memberId, days = SESSION_DAYS) {
   const token = newToken()
-  const expires = new Date(Date.now() + SESSION_DAYS * 864e5).toISOString()
+  const expires = new Date(Date.now() + days * 864e5).toISOString()
   db.prepare('INSERT INTO auth_tokens (token, member_id, expires_at) VALUES (?, ?, ?)').run(token, memberId, expires)
   return { token, expires }
 }
@@ -54,13 +54,25 @@ export function makeAuthMiddleware(db) {
     req.prefs = safeParse(member.prefs)
     next()
   }
+  // public endpoints personalise when a session exists but never require one
+  const attachMember = (req, _res, next) => {
+    const member = readSession(db, req)
+    if (member) {
+      req.member = member
+      req.prefs = safeParse(member.prefs)
+    } else {
+      req.member = null
+      req.prefs = {}
+    }
+    next()
+  }
   const requireAdmin = (req, res, next) => {
     requireAuth(req, res, () => {
       if (req.member.role !== 'admin') return res.status(403).json({ error: 'Admin access required' })
       next()
     })
   }
-  return { requireAuth, requireAdmin }
+  return { requireAuth, requireAdmin, attachMember }
 }
 
 export function safeParse(json, fallback = {}) {

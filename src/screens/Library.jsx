@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApi } from '../api.js'
+import { useAuth } from '../auth.jsx'
 import { CATEGORY_ICONS, ICONS, IMAGES } from '../data.js'
 import Icon from '../components/Icon.jsx'
 import { Card, Chip, EmptyState, ErrorState, PageSkeleton, SectionLabel, Tag, inputStyle } from '../ui.jsx'
 
 export default function Library() {
   const nav = useNavigate()
+  const { member } = useAuth()
   const [tab, setTab] = useState('library')
   const [q, setQ] = useState('')
   const [category, setCategory] = useState(null)
@@ -102,7 +104,10 @@ export default function Library() {
       <SectionLabel>{tab === 'library' ? `${shown.length} item${shown.length === 1 ? '' : 's'}` : 'Saved & routine'}</SectionLabel>
       {shown.length === 0 && (
         tab === 'mylist'
-          ? <EmptyState title="Nothing saved yet" text="Tap the heart on any exercise to build your personal list." />
+          ? (member
+            ? <EmptyState title="Nothing saved yet" text="Tap the heart on any exercise to build your personal list." />
+            : <EmptyState title="Your personal list" text="Create a free account to save favourites, build routines, and track completed sessions."
+                action={<div className="press" onClick={() => nav('/auth', { state: { from: '/library', register: true } })} style={{ background: 'var(--rose)', color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: '.08em', padding: '10px 20px', borderRadius: 100, cursor: 'pointer' }}>CREATE ACCOUNT</div>} />)
           : <EmptyState icon={ICONS.search} title="No matches" text="Try a different search or clear the filters." />
       )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '0 24px 8px' }}>

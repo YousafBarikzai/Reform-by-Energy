@@ -397,3 +397,41 @@ export function seed(db, hashPassword) {
     (2, 'announcement', 'Sunrise Rooftop Session', 'Saturday 7 AM with Nikki — twelve places only.', '/', ?, ?)`,
     iso(dayAt(0, 8, 0)), iso(dayAt(-1, 20, 0)), iso(dayAt(-2, 9, 5)), iso(dayAt(-1, 9, 0)))
 }
+
+// Public-site content. Idempotent so existing databases pick it up on boot.
+export function seedPublicContent(db) {
+  if (!db.prepare('SELECT id FROM testimonials LIMIT 1').get()) {
+    const t = db.prepare('INSERT INTO testimonials (name, text, rating) VALUES (?, ?, ?)')
+    t.run('Amelie R.', 'I came for posture and stayed for the calm. Six months in, I stand taller and sleep better than I have in years.', 5)
+    t.run('Daniel K.', 'After ACL surgery I thought running was over. The reformer brought me back — patient coaching, zero ego.', 5)
+    t.run('Priya S.', 'The studio feels like a deep breath. Small classes, beautiful light, and instructors who genuinely watch your form.', 5)
+    t.run('Hannah M.', 'Booking takes ten seconds and my favourite reformer is always saved. The little things add up.', 5)
+    t.run('Georgia W.', 'I was terrified as a complete beginner. One Basics class later I was hooked — everything is explained, nothing is assumed.', 5)
+  }
+  if (!db.prepare('SELECT id FROM faqs LIMIT 1').get()) {
+    const f = db.prepare('INSERT INTO faqs (question, answer, sort) VALUES (?, ?, ?)')
+    const faqs = [
+      ['I have never done Pilates. Can I join?', 'Absolutely. Reformer Basics is designed for first-timers — everything is taught from zero, and instructors offer modifications in every class. Most members start with the Intro Offer.'],
+      ['What should I wear?', 'Comfortable leggings or shorts and a fitted top you can move in. Grip socks are required — bring your own or buy a pair at the studio.'],
+      ['What do I need to bring?', 'Just grip socks and water. Mats, equipment, towels, and lockers are all provided.'],
+      ['How long is a class?', 'Most classes run 45–50 minutes. Core & More is a focused 30 minutes, and stretch classes run 40 minutes.'],
+      ['What is the cancellation policy?', 'Cancel up to 60 minutes before class for a full credit refund. Inside the cut-off, the credit is used. Waiting-list members are booked in automatically when a space opens.'],
+      ['How do memberships and packs work?', 'Class packs give you a set number of credits with a validity window; Unlimited Monthly covers every class with priority booking. One credit books one class.'],
+      ['Can I train while pregnant?', 'Yes — our Prenatal Reformer class is designed for every trimester, and instructors are trained in pre- and post-natal modifications. Please tell us before class.'],
+      ['I have an injury. Is the reformer safe for me?', 'Reformer Pilates is widely used in rehabilitation, and springs let us scale every exercise. Tell your instructor before class and check with your doctor for recent injuries.'],
+      ['Is there parking nearby?', 'Free two-hour street parking is available on Energym Lane, with a pay-and-display car park two minutes away. The 41 and 87 buses stop outside.'],
+      ['When should I arrive?', 'Please arrive 10 minutes early — earlier for your first visit so we can walk you through the reformer. Doors close at class start.'],
+    ]
+    faqs.forEach(([q, a], i) => f.run(q, a, i))
+  }
+  const noQuals = db.prepare(`SELECT id FROM instructors WHERE quals IS NULL OR quals = ''`).all()
+  if (noQuals.length) {
+    const quals = {
+      1: 'NCPT Certified · Polestar London · 12 years teaching',
+      2: 'STOTT Pilates Level 2 · Pre/Post-natal Certified · 8 years teaching',
+      3: 'BASI Comprehensive · Former professional dancer · 6 years teaching',
+    }
+    const u = db.prepare('UPDATE instructors SET quals = ? WHERE id = ?')
+    for (const row of noQuals) u.run(quals[row.id] || 'Comprehensively certified reformer instructor', row.id)
+  }
+}

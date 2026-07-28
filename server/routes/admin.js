@@ -5,7 +5,7 @@ import { audit, SESSION_SELECT, availability, notify } from '../lib.js'
 // Generic CRUD over whitelisted tables keeps the CMS consistent and safe.
 const ENTITIES = {
   class_types: ['name', 'description', 'level', 'category', 'duration_min', 'image', 'active'],
-  instructors: ['name', 'bio', 'photo', 'specialties', 'active'],
+  instructors: ['name', 'bio', 'photo', 'specialties', 'quals', 'active'],
   studios: ['name', 'cols', 'entrance'],
   reformers: ['studio_id', 'number', 'status'],
   packages: ['name', 'kind', 'price_cents', 'classes', 'validity_days', 'description', 'terms', 'popular', 'intro', 'active', 'sort'],
@@ -16,6 +16,8 @@ const ENTITIES = {
   playlists: ['title', 'cover', 'platform', 'url', 'instructor_id'],
   announcements: ['title', 'body', 'pinned', 'active'],
   motivations: ['text', 'author'],
+  testimonials: ['name', 'text', 'rating', 'active'],
+  faqs: ['question', 'answer', 'sort', 'active'],
   class_sessions: ['class_type_id', 'instructor_id', 'studio_id', 'starts_at', 'duration_min', 'capacity', 'cutoff_min', 'playlist_id', 'status'],
 }
 
