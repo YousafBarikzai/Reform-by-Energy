@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../api.js'
 import { useAuth } from '../auth.jsx'
-import { Btn, Field, inputStyle, useToast } from '../ui.jsx'
+import { Btn, Field, PageSkeleton, inputStyle, useToast } from '../ui.jsx'
 import { FullLogo } from '../components/Logo.jsx'
 
 export default function AuthScreen() {
-  const { member, setMember } = useAuth()
+  const { member, setMember, loading } = useAuth()
   const location0 = useLocation()
-  const [mode, setMode] = useState(location0.state?.register ? 'register' : 'login') // login | register | forgot | reset
+  const [mode, setMode] = useState(location0.state?.forgot ? 'forgot' : location0.state?.register ? 'register' : 'login') // login | register | forgot | reset
   const [form, setForm] = useState({ remember: true })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
@@ -16,6 +16,7 @@ export default function AuthScreen() {
   const toast = useToast()
   const nav = useNavigate()
   const location = useLocation()
+  if (loading) return <PageSkeleton />
   if (member) return <Navigate to={location.state?.from || '/'} replace />
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -40,7 +41,7 @@ export default function AuthScreen() {
         toast('Password updated — sign in')
         setMode('login')
       }
-      nav(location.state?.from || '/', { replace: true })
+      if (mode === 'login' || mode === 'register') nav(location.state?.from || '/', { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {

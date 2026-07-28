@@ -12,7 +12,7 @@ export default function publicRoutes({ attachMember }) {
     const teaches = db.prepare(`
       SELECT DISTINCT s.instructor_id, ct.id AS type_id, ct.name, ct.level, ct.image
       FROM class_sessions s JOIN class_types ct ON ct.id = s.class_type_id
-      WHERE datetime(s.starts_at) > datetime('now') AND ct.active = 1`).all()
+      WHERE s.status = 'scheduled' AND datetime(s.starts_at) > datetime('now') AND ct.active = 1`).all()
     res.json({
       instructors: instructors.map((i) => ({
         ...i,
@@ -41,7 +41,7 @@ export default function publicRoutes({ attachMember }) {
       testimonials: db.prepare('SELECT id, name, text, rating FROM testimonials WHERE active = 1 ORDER BY id LIMIT 8').all(),
       faqs: db.prepare('SELECT id, question, answer FROM faqs WHERE active = 1 ORDER BY sort').all(),
       stats: {
-        weeklyClasses: db.prepare(`SELECT COUNT(*) AS n FROM class_sessions WHERE datetime(starts_at) BETWEEN datetime('now') AND datetime('now', '+7 days')`).get().n,
+        weeklyClasses: db.prepare(`SELECT COUNT(*) AS n FROM class_sessions WHERE status = 'scheduled' AND datetime(starts_at) BETWEEN datetime('now') AND datetime('now', '+7 days')`).get().n,
         instructors: db.prepare('SELECT COUNT(*) AS n FROM instructors WHERE active = 1').get().n,
         maxClassSize: db.prepare('SELECT MAX(capacity) AS n FROM class_sessions').get().n || 8,
         classTypes: db.prepare('SELECT COUNT(*) AS n FROM class_types WHERE active = 1').get().n,

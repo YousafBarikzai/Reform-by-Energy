@@ -62,7 +62,7 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }))
 // class reminder sweep: notify members ~2h before their booked class
 function reminderSweep() {
   const rows = db.prepare(`
-    SELECT b.id, b.member_id, s.starts_at, ct.name AS class_name, st.name AS studio_name
+    SELECT b.id, b.member_id, s.id AS session_id, s.starts_at, ct.name AS class_name, st.name AS studio_name
     FROM bookings b
     JOIN class_sessions s ON s.id = b.session_id
     JOIN class_types ct ON ct.id = s.class_type_id
@@ -70,10 +70,11 @@ function reminderSweep() {
     WHERE b.status = 'booked' AND b.attended = 0
       AND datetime(s.starts_at) BETWEEN datetime('now', '+110 minutes') AND datetime('now', '+130 minutes')`).all()
   for (const r of rows) {
-    const already = db.prepare(`SELECT 1 FROM notifications WHERE member_id = ? AND kind = 'reminder' AND link = ?`).get(r.member_id, `/reminder/${r.id}`)
+    const link = `/class/${r.session_id}`
+    const already = db.prepare(`SELECT 1 FROM notifications WHERE member_id = ? AND kind = 'reminder' AND link = ?`).get(r.member_id, link)
     if (already) continue
     const when = new Date(r.starts_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-    notify(r.member_id, 'reminder', `Class at ${when}`, `${r.class_name} in ${r.studio_name} — see you soon.`, `/reminder/${r.id}`)
+    notify(r.member_id, 'reminder', `Class at ${when}`, `${r.class_name} in ${r.studio_name} — see you soon.`, link)
   }
 }
 setInterval(reminderSweep, 10 * 60000)

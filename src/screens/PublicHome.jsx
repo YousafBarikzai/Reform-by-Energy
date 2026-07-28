@@ -56,7 +56,7 @@ function InlineLogin() {
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 12, fontSize: 12.5, fontWeight: 600 }}>
         <span style={{ color: 'var(--rose)', cursor: 'pointer' }} onClick={() => nav('/auth', { state: { register: true } })}>Create account</span>
-        <span style={{ color: 'var(--sub)', cursor: 'pointer' }} onClick={() => nav('/auth')}>Forgot password</span>
+        <span style={{ color: 'var(--sub)', cursor: 'pointer' }} onClick={() => nav('/auth', { state: { forgot: true } })}>Forgot password</span>
       </div>
     </Card>
   )
