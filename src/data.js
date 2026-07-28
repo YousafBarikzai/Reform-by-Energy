@@ -1,62 +1,9 @@
+// Static frontend data: brand imagery for shell screens and the icon set.
+// All member/studio content now comes from the API.
 import heroReformer from './assets/images/hero-reformer.jpg'
-import classReformer from './assets/images/class-reformer.jpg'
-import classCore from './assets/images/class-core.jpg'
-import classBarre from './assets/images/class-barre.jpg'
-import classYoga from './assets/images/class-yoga.jpg'
-import avatarMara from './assets/images/avatar-mara.jpg'
-import avatarSofia from './assets/images/avatar-sofia.jpg'
-import avatarAva from './assets/images/avatar-ava.jpg'
-import profile from './assets/images/profile.jpg'
+import wellnessHero from './assets/images/wellness-hero.jpg'
 
-export const IMAGES = { heroReformer, classReformer, profile }
-
-export const MEMBER = { first: 'Sophie', name: 'Sophie Smith', email: 'sophie@email.com', avatar: profile }
-
-export const INSTRUCTORS = {
-  Nikki: avatarMara,
-  Laura: avatarSofia,
-  Chloe: avatarAva,
-}
-
-export const STUDIO = 'Reform Studio'
-
-// Schedule week (per reference: Mon 20 – Sun 26, Wednesday selected)
-export const DOWS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-export const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-export const dayNum = (i) => 20 + i
-
-export const SESSIONS = [
-  { id: 0, time: '8:00', ampm: 'AM', name: 'Reformer Basics', coach: 'Laura' },
-  { id: 1, time: '10:00', ampm: 'AM', name: 'Reformer Flow', coach: 'Nikki' },
-  { id: 2, time: '12:00', ampm: 'PM', name: 'Core & More', coach: 'Chloe' },
-  { id: 3, time: '5:30', ampm: 'PM', name: 'Reformer Sculpt', coach: 'Nikki' },
-  { id: 4, time: '6:30', ampm: 'PM', name: 'Stretch & Reset', coach: 'Laura' },
-]
-
-export const NEXT_CLASS = {
-  name: 'Reformer Flow', focus: 'Full Body', when: 'Today, 10:00 AM',
-  studio: STUDIO, coach: 'Nikki', img: classReformer,
-}
-
-export const UPCOMING = [
-  { id: 2, name: 'Core & More', when: 'May 24, 12:00 PM', coach: 'Nikki' },
-  { id: 3, name: 'Reformer Sculpt', when: 'May 25, 5:30 PM', coach: 'Chloe' },
-]
-
-export const PACKAGES = [
-  { id: '10', name: '10 Class Pack', price: '$260', per: '$26 / class', perks: ['10 Reformer classes', 'Valid for 3 months'], popular: true },
-  { id: '5', name: '5 Class Pack', price: '$140', per: '$28 / class', perks: ['5 Reformer classes', 'Valid for 2 months'] },
-  { id: '20', name: '20 Class Pack', price: '$480', per: '$24 / class', perks: ['20 Reformer classes', 'Valid for 6 months'] },
-  { id: '1', name: 'Single Class', price: '$32', per: '', perks: ['1 Reformer class', 'Valid for 1 month'], compact: true },
-]
-
-export const CATEGORIES = ['Full Body', 'Lower Body', 'Core', 'Arms', 'Stretch']
-
-export const WORKOUTS = [
-  { name: 'Full Body Flow', dur: '30 min', img: classYoga },
-  { name: 'Core Connection', dur: '25 min', img: classCore },
-  { name: 'Lower Body Burn', dur: '20 min', img: classBarre },
-]
+export const IMAGES = { heroReformer, wellnessHero }
 
 // Simple stroke icon paths (24×24 viewBox)
 export const ICONS = {
@@ -77,10 +24,35 @@ export const ICONS = {
   mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
   logout: 'M14 4h-9v16h9M10 12h11M18 8.5 21.5 12 18 15.5',
   booking: 'M6 3h12v18l-6-4-6 4z',
-  // library categories
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM16.5 16.5 21 21',
+  plus: 'M12 5v14M5 12h14',
+  camera: 'M4 7h3l2-2h6l2 2h3v12H4zM12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z',
+  ruler: 'M3 8h18v8H3zM7 8v3M11 8v4M15 8v3M19 8v4',
+  flame: 'M12 3c1 3-1 4-1 6a2.5 2.5 0 0 0 5 .5C18 12 19 13.5 19 16a7 7 0 1 1-14 0c0-4 3-5.5 4-8 .8 1 1.2 1.8 1.2 3A9 9 0 0 1 12 3z',
+  trophy: 'M7 4h10v5a5 5 0 0 1-10 0zM7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M12 14v3M8 21h8M9 17h6',
+  sparkle: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9z',
+  mirror: 'M12 3a7 7 0 0 1 7 7c0 5-3 8-7 8s-7-3-7-8a7 7 0 0 1 7-7zM12 18v3M8 21h8',
+  drop: 'M12 3c3.5 4.5 6 7.6 6 11a6 6 0 1 1-12 0c0-3.4 2.5-6.5 6-11z',
+  moon: 'M20 14A8 8 0 1 1 10 4a7 7 0 0 0 10 10z',
+  sun: 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19',
+  music: 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0zM19 16a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z',
+  watch: 'M8 8h8v8H8zM9 8l.7-4h4.6L15 8M9 16l.7 4h4.6l.7-4',
+  qr: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h3v3h-3zM20 17v3h-3',
+  shield: 'M12 3l8 3v6c0 5-3.5 7.7-8 9-4.5-1.3-8-4-8-9V6z',
+  download: 'M12 3v11M7.5 10 12 14.5 16.5 10M4 18h16v3H4z',
+  filter: 'M4 6h16M7 12h10M10 18h4',
   fullBody: 'M12 3a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM8 10h8l-1.5 4H14v7h-4v-7H9.5z',
   lowerBody: 'M9 3h6l-1 8 3 9h-3l-2.5-7L9 20H6l3-9z',
   core: 'M12 4c3 2.5 4.5 5 4.5 8s-1.5 5.5-4.5 8c-3-2.5-4.5-5-4.5-8s1.5-5.5 4.5-8zM12 9.5v5',
   arms: 'M4 15l4-4 3 1 4-6 5 2-2 4h-4l-3 6-5-1z',
   stretch: 'M5 19c3-1 5-3 6-6M13 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM8 11l4-1 4 3 3 6M12 10l-1 5',
+}
+
+export const CATEGORY_ICONS = {
+  'Full Body': ICONS.fullBody,
+  'Lower Body': ICONS.lowerBody,
+  'Core': ICONS.core,
+  'Arms': ICONS.arms,
+  'Stretch': ICONS.stretch,
+  'Prenatal': ICONS.heart,
 }
