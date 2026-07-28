@@ -1,13 +1,13 @@
 {
-  "name": "Reform by Energy",
+  "name": "Reform by Energym",
   "short_name": "Reform",
-  "description": "Boutique Pilates studio — classes, booking, community, and wellness.",
+  "description": "Reform by Energym — reformer Pilates classes, schedule, packages, and exercise library.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F7F4EE",
-  "theme_color": "#E9E4DA",
+  "background_color": "#FFF7F9",
+  "theme_color": "#FFF7F9",
   "icons": [
     { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png" },

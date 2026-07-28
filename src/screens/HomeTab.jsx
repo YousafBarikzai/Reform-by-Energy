@@ -1,82 +1,107 @@
-import { CLASSES, IMAGES } from '../data.js'
+import { ICONS, INSTRUCTORS, MEMBER, NEXT_CLASS, UPCOMING } from '../data.js'
+import Icon from '../components/Icon.jsx'
+import { Monogram } from '../components/Logo.jsx'
+
+function Ring({ pct }) {
+  const r = 26
+  const c = 2 * Math.PI * r
+  return (
+    <svg width="72" height="72" viewBox="0 0 72 72">
+      <circle cx="36" cy="36" r={r} fill="none" stroke="var(--pinksoft)" strokeWidth="7" />
+      <circle cx="36" cy="36" r={r} fill="none" stroke="var(--rose)" strokeWidth="7" strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={c * (1 - pct / 100)} transform="rotate(-90 36 36)"
+        style={{ transition: 'stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1)' }} />
+      <text x="36" y="41" textAnchor="middle" fontSize="15" fontWeight="600" fill="var(--ink)" fontFamily="'Albert Sans',sans-serif">{pct}%</text>
+    </svg>
+  )
+}
+
+const label = { fontSize: 11, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--rose)', fontWeight: 600 }
 
 export default function HomeTab({ app }) {
-  const { state, patch, open, memberName, showPromo } = app
+  const { patch, vibrate } = app
+  const actions = [
+    { icon: ICONS.booking, name: 'Book Class', go: () => patch({ tab: 'schedule' }) },
+    { icon: ICONS.calendar, name: 'Schedule', go: () => patch({ tab: 'schedule' }) },
+    { icon: ICONS.tag, name: 'Packages', go: () => patch({ tab: 'packages' }) },
+    { icon: ICONS.play, name: 'Library', go: () => patch({ tab: 'library' }) },
+  ]
   return (
     <div style={{ animation: 'plFade .3s' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px 6px' }}>
-        <div>
-          <div style={{ fontSize: 13, color: 'var(--sub)', letterSpacing: '.08em', textTransform: 'uppercase' }}>Good morning</div>
-          <div style={{ fontFamily: 'Marcellus,serif', fontSize: 30, lineHeight: 1.1, marginTop: 2 }}>{memberName}</div>
-        </div>
-        <img src={IMAGES.avatarAva} alt="You" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--gold)' }} />
+      {/* brand strip */}
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '14px 0 0' }}>
+        <Monogram size={34} />
       </div>
 
-      <div onClick={() => open(0)} style={{ margin: '16px 24px 0', position: 'relative', borderRadius: 26, overflow: 'hidden', boxShadow: 'var(--shadow)', cursor: 'pointer' }}>
-        <img src={IMAGES.heroReformer} alt="Reformer Pilates" style={{ width: '100%', height: 240, objectFit: 'cover', display: 'block' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(20,18,14,0) 30%,rgba(20,18,14,.72) 100%)' }} />
-        <div style={{ position: 'absolute', left: 20, right: 20, bottom: 18, color: '#fff' }}>
-          <div style={{ fontSize: 12, letterSpacing: '.12em', textTransform: 'uppercase', color: '#E8DCC3' }}>Today · 6:30 PM</div>
-          <div style={{ fontFamily: 'Marcellus,serif', fontSize: 26, marginTop: 4 }}>Reformer Pilates</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, fontSize: 13, color: 'rgba(255,255,255,.85)' }}>
-            <span>Mara Ellison</span><span style={{ opacity: 0.5 }}>·</span><span>50 min</span><span style={{ opacity: 0.5 }}>·</span><span>Studio A</span>
+      {/* greeting */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 24px 0' }}>
+        <div>
+          <div style={{ fontSize: 15, color: 'var(--sub)' }}>Good morning,</div>
+          <div style={{ fontFamily: 'Marcellus,serif', fontSize: 32, lineHeight: 1.1, color: 'var(--rose)', marginTop: 2 }}>{MEMBER.first} <span style={{ fontSize: 22 }}>♡</span></div>
+        </div>
+        <div className="press" style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--card)', boxShadow: 'var(--shadow)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--ink)' }}>
+          <Icon d={ICONS.bell} size={20} />
+        </div>
+      </div>
+
+      {/* next class */}
+      <div style={{ ...label, padding: '22px 24px 10px' }}>Your next class</div>
+      <div style={{ margin: '0 24px', background: 'var(--card)', borderRadius: 24, padding: 14, boxShadow: 'var(--shadow)', display: 'flex', gap: 14 }}>
+        <img src={NEXT_CLASS.img} alt={NEXT_CLASS.name} style={{ width: 108, borderRadius: 18, objectFit: 'cover' }} />
+        <div style={{ flex: 1, padding: '4px 0' }}>
+          <div style={{ fontWeight: 600, fontSize: 17 }}>{NEXT_CLASS.name}</div>
+          <div style={{ fontSize: 12, color: 'var(--sub)', marginTop: 1 }}>{NEXT_CLASS.focus}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginTop: 9, fontSize: 12, color: 'var(--sub)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}><Icon d={ICONS.clock} size={13} color="var(--rose)" /> {NEXT_CLASS.when}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}><Icon d={ICONS.pin} size={13} color="var(--rose)" /> {NEXT_CLASS.studio}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}><Icon d={ICONS.user} size={13} color="var(--rose)" /> {NEXT_CLASS.coach}</div>
+          </div>
+          <div className="press" style={{ marginTop: 11, display: 'inline-block', background: 'var(--rose)', color: '#fff', fontSize: 11, fontWeight: 600, letterSpacing: '.08em', padding: '8px 16px', borderRadius: 100, cursor: 'pointer' }}>VIEW DETAILS</div>
+        </div>
+      </div>
+
+      {/* weekly progress */}
+      <div style={{ margin: '14px 24px 0', background: 'var(--card)', borderRadius: 24, padding: '18px 20px', boxShadow: 'var(--shadow)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ ...label, color: 'var(--sub)' }}>Weekly progress</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 8 }}>
+            <div style={{ fontFamily: 'Marcellus,serif', fontSize: 36, lineHeight: 1 }}>3</div>
+            <div style={{ fontSize: 12, color: 'var(--sub)' }}>of 4 classes<br />completed</div>
           </div>
         </div>
-        <div style={{ position: 'absolute', top: 16, left: 20, background: 'rgba(255,255,255,.2)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,.35)', color: '#fff', fontSize: 12, fontWeight: 600, padding: '6px 12px', borderRadius: 100 }}>Booked</div>
+        <Ring pct={75} />
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '28px 24px 12px' }}>
-        <div style={{ fontFamily: 'Marcellus,serif', fontSize: 20 }}>Popular this week</div>
-        <div onClick={() => patch({ tab: 'classes' })} style={{ fontSize: 13, fontWeight: 600, color: 'var(--sage)', cursor: 'pointer' }}>See all</div>
-      </div>
-      <div style={{ display: 'flex', gap: 14, overflowX: 'auto', padding: '2px 24px 8px' }}>
-        {CLASSES.slice(0, 5).map((c, i) => (
-          <div key={c.name} onClick={() => open(i)} style={{ flex: '0 0 168px', background: 'var(--card)', borderRadius: 20, overflow: 'hidden', boxShadow: 'var(--shadow)', cursor: 'pointer' }}>
-            <img src={c.img} alt={c.name} style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }} />
-            <div style={{ padding: '12px 14px 14px' }}>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>{c.name}</div>
-              <div style={{ fontSize: 12, color: 'var(--sub)', marginTop: 3 }}>{c.dur} min · {c.level}</div>
+      {/* quick actions */}
+      <div style={{ ...label, padding: '22px 24px 10px' }}>Quick actions</div>
+      <div style={{ display: 'flex', gap: 10, padding: '0 24px' }}>
+        {actions.map((a) => (
+          <div key={a.name} className="press" onClick={() => { vibrate(5); a.go() }} style={{ flex: 1, background: 'var(--card)', borderRadius: 18, padding: '14px 4px 12px', boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'var(--pinksoft)', color: 'var(--rose)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon d={a.icon} size={17} />
             </div>
+            <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--ink)', textAlign: 'center' }}>{a.name}</div>
           </div>
         ))}
       </div>
 
-      <div style={{ margin: '24px 24px 0', background: 'var(--card)', borderRadius: 22, padding: '18px 20px', boxShadow: 'var(--shadow)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 12, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--sub)' }}>Continue programme</div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold)' }}>Week 3 of 6</div>
-        </div>
-        <div style={{ fontFamily: 'Marcellus,serif', fontSize: 19, marginTop: 8 }}>Foundations of Reformer</div>
-        <div style={{ height: 6, background: 'var(--stone)', borderRadius: 100, marginTop: 14, overflow: 'hidden' }}>
-          <div style={{ width: '46%', height: '100%', background: 'linear-gradient(90deg,var(--sage),var(--gold))', borderRadius: 100 }} />
-        </div>
-        <div style={{ fontSize: 12, color: 'var(--sub)', marginTop: 8 }}>7 of 15 sessions complete</div>
+      {/* upcoming classes */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', padding: '24px 24px 10px' }}>
+        <div style={label}>Upcoming classes</div>
+        <div onClick={() => patch({ tab: 'schedule' })} style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.08em', color: 'var(--sub)', cursor: 'pointer' }}>VIEW ALL</div>
       </div>
-
-      <div onClick={() => patch({ view: 'instructor' })} style={{ margin: '16px 24px 0', display: 'flex', gap: 14, alignItems: 'center', background: 'var(--sagesoft)', borderRadius: 22, padding: 16, cursor: 'pointer' }}>
-        <img src={IMAGES.maraFeatured} alt="Mara Ellison" style={{ width: 58, height: 58, borderRadius: '50%', objectFit: 'cover' }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--sage)', fontWeight: 600 }}>Featured instructor</div>
-          <div style={{ fontWeight: 600, fontSize: 16, marginTop: 2 }}>Mara Ellison</div>
-          <div style={{ fontSize: 12, color: 'var(--sub)' }}>Reformer · 12 yrs experience</div>
-        </div>
-        <div style={{ color: 'var(--sage)', fontSize: 20 }}>›</div>
-      </div>
-
-      <div style={{ margin: '16px 24px 0', background: 'linear-gradient(135deg,var(--goldsoft),var(--card))', border: '1px solid var(--line)', borderRadius: 22, padding: '22px 22px 20px', textAlign: 'center' }}>
-        <div style={{ fontFamily: 'Marcellus,serif', fontSize: 18, lineHeight: 1.5, color: 'var(--ink)' }}>“Movement is a conversation between body and breath.”</div>
-        <div style={{ fontSize: 12, color: 'var(--sub)', marginTop: 8, letterSpacing: '.08em', textTransform: 'uppercase' }}>Daily intention</div>
-      </div>
-
-      {showPromo && (
-        <div style={{ margin: '16px 24px 0', background: 'var(--ink)', color: 'var(--bg)', borderRadius: 22, padding: '20px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontFamily: 'Marcellus,serif', fontSize: 18 }}>Bring a friend</div>
-            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 3 }}>Gift a class · earn 1 credit</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '0 24px 8px' }}>
+        {UPCOMING.map((u) => (
+          <div key={u.name} style={{ background: 'var(--card)', borderRadius: 20, padding: '12px 14px', boxShadow: 'var(--shadow)', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img src={INSTRUCTORS[u.coach]} alt={u.coach} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>{u.name}</div>
+              <div style={{ fontSize: 12, color: 'var(--sub)', marginTop: 2 }}>{u.when} · {u.coach}</div>
+            </div>
+            <div className="press" onClick={() => { vibrate(5); patch({ tab: 'schedule' }) }} style={{ border: '1.5px solid var(--rose)', color: 'var(--rose)', fontSize: 11, fontWeight: 600, letterSpacing: '.06em', padding: '7px 16px', borderRadius: 100, cursor: 'pointer' }}>BOOK</div>
           </div>
-          <div style={{ background: 'var(--gold)', color: '#fff', fontSize: 13, fontWeight: 600, padding: '9px 16px', borderRadius: 100 }}>Invite</div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   )
 }

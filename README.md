@@ -1,21 +1,20 @@
-# Reform by Energy — Pilates Studio App
+# Reform by Energym — Pilates Studio PWA
 
-A boutique Pilates studio companion app, implemented from the
-[Claude Design](https://claude.ai/design) project **Pilates Studio App** as a
-Vite + React single-page app.
+The Reform by Energym member app: a mobile-first, installable PWA built with
+Vite + React, in the studio's baby-pink brand.
 
-## Features
+## Pages
 
-- **Home** — today's booked class, popular classes, programme progress, featured instructor, daily intention
-- **Classes** — browsable catalogue with category filters (Reformer, Mat, Barre, Prenatal)
-- **Schedule** — day picker and session list with Book / Waitlist / Booked states
-- **Booking flow** — choose a day and time, confirm in a bottom sheet, animated success screen; studio credits are deducted and the class is marked booked
-- **Community** — monthly challenge, leaderboard, member stories, events
-- **Profile** — membership credits, progress stats, settings, and a dark-mode toggle
-- **Detail screens** — class detail, instructor profile, progress, membership plans, wellness (with hydration tracker)
+- **Home** — greeting, next class, weekly progress ring, quick actions, upcoming classes
+- **Schedule** — week strip and daily class list with booking states
+- **Packages** — class packs and membership tabs
+- **Library** — exercise library subscription, categories, popular workouts
+- **Profile** — account and support settings
 
-On desktop the app renders inside an iOS device frame, matching the design.
-At phone widths (≤ 520 px) it fills the viewport like a native app.
+A floating bottom navigation bar keeps all five sections one tap away.
+On desktop the app renders inside an iOS device frame; at phone widths
+(≤ 520 px) it fills the viewport like a native app, and can be installed to
+the home screen on iOS and Android.
 
 ## Development
 
@@ -23,7 +22,8 @@ At phone widths (≤ 520 px) it fills the viewport like a native app.
 npm install
 npm run dev      # start dev server
 npm run build    # production build to dist/
-npm run preview  # serve the production build
+npm start        # serve the production build (Railway-compatible, binds $PORT)
 ```
 
-All images and fonts (Albert Sans, Marcellus) are self-hosted in `src/assets/`.
+Fonts (Albert Sans, Marcellus) and imagery are self-hosted in `src/assets/`.
+The brand marks live in `src/components/Logo.jsx`.
